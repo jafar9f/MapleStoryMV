@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>楓之谷M — V核心最佳組合計算器</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+:root {
+  --color-bg: #ffffff;
+  --color-bg-secondary: #f5f5f4;
+  --color-bg-tertiary: #e8e8e6;
+  --color-bg-info: #e6f1fb;
+  --color-bg-success: #eaf3de;
+  --color-bg-warning: #faeeda;
+  --color-bg-danger: #fcebeb;
+  --color-text: #1a1a1a;
+  --color-text-secondary: #6b6b6b;
+  --color-text-tertiary: #9a9a9a;
+  --color-text-info: #0c447c;
+  --color-text-success: #27500a;
+  --color-text-warning: #633806;
+  --color-text-danger: #791f1f;
+  --color-border: rgba(0,0,0,0.1);
+  --color-border-md: rgba(0,0,0,0.2);
+  --color-border-info: rgba(12,68,124,0.3);
+  --color-border-success: rgba(39,80,10,0.3);
+  --color-border-warning: rgba(99,56,6,0.3);
+  --color-border-danger: rgba(121,31,31,0.3);
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg: #1c1c1e;
+    --color-bg-secondary: #2c2c2e;
+    --color-bg-tertiary: #3a3a3c;
+    --color-bg-info: #0c2d4a;
+    --color-bg-success: #172904;
+    --color-bg-warning: #2e1a02;
+    --color-bg-danger: #2d0d0d;
+    --color-text: #f0f0f0;
+    --color-text-secondary: #a0a0a0;
+    --color-text-tertiary: #666;
+    --color-text-info: #85b7eb;
+    --color-text-success: #97c459;
+    --color-text-warning: #ef9f27;
+    --color-text-danger: #f09595;
+    --color-border: rgba(255,255,255,0.1);
+    --color-border-md: rgba(255,255,255,0.2);
+    --color-border-info: rgba(133,183,235,0.3);
+    --color-border-success: rgba(151,196,89,0.3);
+    --color-border-warning: rgba(239,159,39,0.3);
+    --color-border-danger: rgba(240,149,149,0.3);
+  }
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font);background:var(--color-bg);color:var(--color-text);min-height:100vh;padding:0 0 4rem}
+.container{max-width:780px;margin:0 auto;padding:1.5rem 1.25rem}
+.header{display:flex;align-items:center;gap:14px;margin-bottom:1.75rem;padding-bottom:1.25rem;border-bottom:0.5px solid var(--color-border)}
+.header-icon{width:48px;height:48px;background:var(--color-bg-info);border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.header-icon i{font-size:24px;color:var(--color-text-info)}
+.header h1{font-size:20px;font-weight:500;color:var(--color-text)}
+.header p{font-size:13px;color:var(--color-text-secondary);margin-top:3px}
+.step-bar{display:flex;gap:6px;margin-bottom:1.75rem}
+.step{flex:1;padding:8px 6px;border-radius:var(--radius-md);border:0.5px solid var(--color-border);font-size:11px;text-align:center;color:var(--color-text-secondary);cursor:pointer;transition:all .15s;line-height:1.5;background:var(--color-bg)}
+.step.active{background:var(--color-bg-info);border-color:var(--color-border-info);color:var(--color-text-info);font-weight:500}
+.step.done{background:var(--color-bg-success);border-color:var(--color-border-success);color:var(--color-text-success)}
+.panel{display:none}.panel.visible{display:block}
+.class-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(105px,1fr));gap:6px;margin-bottom:.5rem}
+.grp-label{font-size:11px;font-weight:500;color:var(--color-text-tertiary);letter-spacing:.05em;margin:14px 0 5px;grid-column:1/-1}
+.class-btn{padding:8px 4px;border-radius:var(--radius-md);border:0.5px solid var(--color-border);background:var(--color-bg);font-size:12px;text-align:center;cursor:pointer;color:var(--color-text);transition:all .15s;line-height:1.5}
+.class-btn:hover{background:var(--color-bg-secondary)}
+.class-btn.selected{background:var(--color-bg-info);border-color:var(--color-border-info);color:var(--color-text-info);font-weight:500}
+.add-class-row{display:flex;gap:8px;align-items:center;margin-top:12px;padding-top:12px;border-top:0.5px solid var(--color-border)}
+button{font-family:var(--font);cursor:pointer}
+.btn-primary{padding:9px 18px;border-radius:var(--radius-md);background:var(--color-bg-info);border:0.5px solid var(--color-border-info);color:var(--color-text-info);font-size:13px;font-weight:500;transition:opacity .15s}
+.btn-primary:hover{opacity:.85}
+.btn-primary:disabled{opacity:.4;cursor:not-allowed}
+.btn-secondary{padding:9px 18px;border-radius:var(--radius-md);background:var(--color-bg);border:0.5px solid var(--color-border-md);color:var(--color-text);font-size:13px;transition:background .15s}
+.btn-secondary:hover{background:var(--color-bg-secondary)}
+.btn-danger{padding:6px 10px;border-radius:var(--radius-md);background:var(--color-bg-danger);border:0.5px solid var(--color-border-danger);color:var(--color-text-danger);font-size:12px}
+.btn-success{padding:9px 18px;border-radius:var(--radius-md);background:var(--color-bg-success);border:0.5px solid var(--color-border-success);color:var(--color-text-success);font-size:13px;font-weight:500}
+.action-row{display:flex;gap:8px;margin-top:1.25rem;flex-wrap:wrap;align-items:center}
+input[type=text]{font-family:var(--font);padding:8px 12px;border-radius:var(--radius-md);border:0.5px solid var(--color-border-md);background:var(--color-bg);color:var(--color-text);font-size:13px;width:100%;transition:border-color .15s}
+input[type=text]:focus{outline:none;border-color:var(--color-border-info);box-shadow:0 0 0 2px rgba(12,68,124,.1)}
+select{font-family:var(--font);width:100%;font-size:13px;padding:8px 10px;border-radius:var(--radius-md);border:0.5px solid var(--color-border-md);background:var(--color-bg);color:var(--color-text);cursor:pointer;transition:border-color .15s}
+select:focus{outline:none;border-color:var(--color-border-info);box-shadow:0 0 0 2px rgba(12,68,124,.1)}
+.ref-box{border-radius:var(--radius-lg);padding:1rem 1.25rem;margin-bottom:1.25rem;border:0.5px solid var(--color-border);background:var(--color-bg-secondary)}
+.ref-box.pending{border-color:var(--color-border-warning);background:var(--color-bg-warning)}
+.ref-box-title{font-size:13px;font-weight:500;color:var(--color-text);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.section-title{font-size:14px;font-weight:500;color:var(--color-text);margin-bottom:10px;margin-top:1.5rem}
+.skill-pool-wrap{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;min-height:32px}
+.skill-pool-tag{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:var(--radius-md);border:0.5px solid var(--color-border);background:var(--color-bg);font-size:13px;color:var(--color-text)}
+.skill-pool-tag.perfect{border-color:var(--color-border-info);background:var(--color-bg-info);color:var(--color-text-info)}
+.skill-pool-tag .rm{background:none;border:none;font-size:14px;color:var(--color-text-tertiary);cursor:pointer;padding:0;display:flex;align-items:center;line-height:1}
+.skill-pool-tag .rm:hover{color:var(--color-text-danger)}
+.quick-chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px}
+.qchip{padding:4px 10px;border-radius:99px;font-size:12px;border:0.5px solid var(--color-border);background:var(--color-bg-secondary);color:var(--color-text-secondary);cursor:pointer;transition:all .12s}
+.qchip:hover{background:var(--color-bg-info);border-color:var(--color-border-info);color:var(--color-text-info)}
+.qchip.perfect{border-color:var(--color-border-info);background:var(--color-bg-info);color:var(--color-text-info)}
+.qchip.added{opacity:.3;pointer-events:none}
+.manual-row{display:flex;gap:8px;margin-bottom:6px}
+.manual-row input{flex:1}
+.core-card{background:var(--color-bg);border:0.5px solid var(--color-border);border-radius:var(--radius-lg);padding:1rem;margin-bottom:10px}
+.core-card-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.core-slots{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.slot-label{font-size:11px;color:var(--color-text-tertiary);margin-bottom:5px;display:flex;align-items:center;gap:3px}
+.slot-label.first{color:var(--color-text-info);font-weight:500}
+.add-core-btn{display:flex;align-items:center;justify-content:center;gap:6px;padding:11px;border-radius:var(--radius-md);border:0.5px dashed var(--color-border-md);background:var(--color-bg-secondary);color:var(--color-text-secondary);font-size:13px;width:100%;cursor:pointer;transition:all .15s;margin-top:4px;font-family:var(--font)}
+.add-core-btn:hover{background:var(--color-bg);color:var(--color-text)}
+.info-bar{background:var(--color-bg-secondary);border-radius:var(--radius-md);padding:9px 13px;margin-bottom:1.25rem;font-size:12px;color:var(--color-text-secondary)}
+.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:1.25rem}
+.stat-card{background:var(--color-bg-secondary);border-radius:var(--radius-md);padding:.875rem;text-align:center}
+.stat-card .num{font-size:24px;font-weight:500;color:var(--color-text)}
+.stat-card .lbl{font-size:11px;color:var(--color-text-secondary);margin-top:3px}
+.result-sec{margin-bottom:1.75rem}
+.result-title{font-size:14px;font-weight:500;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.used-card{background:var(--color-bg);border:0.5px solid var(--color-border-success);border-radius:var(--radius-lg);padding:1rem;margin-bottom:8px}
+.excl-card{background:var(--color-bg-secondary);border:0.5px solid var(--color-border);border-radius:var(--radius-lg);padding:.875rem 1rem;margin-bottom:6px;opacity:.65}
+.skill-tag{display:inline-flex;align-items:center;gap:3px;padding:3px 9px;border-radius:99px;font-size:12px;margin:2px}
+.skill-tag.first{background:var(--color-bg-info);color:var(--color-text-info)}
+.skill-tag.other{background:var(--color-bg-secondary);color:var(--color-text-secondary)}
+.level-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.level-item{display:flex;align-items:center;gap:7px;padding:5px 11px;border-radius:var(--radius-md);border:0.5px solid var(--color-border);background:var(--color-bg-secondary);font-size:12px}
+.lbar-wrap{width:52px;height:4px;background:var(--color-bg-tertiary);border-radius:2px;overflow:hidden}
+.lbar{height:4px;border-radius:2px;background:var(--color-text-success)}
+.lbar.max{background:var(--color-text-warning)}
+.lnum{font-size:12px;font-weight:500;min-width:32px;text-align:right;color:var(--color-text-success)}
+.lnum.max{color:var(--color-text-warning)}
+.notice{font-size:12px;color:var(--color-text-secondary);padding:9px 13px;border-radius:var(--radius-md);background:var(--color-bg-secondary);margin-top:8px}
+.share-box{background:var(--color-bg-secondary);border:0.5px solid var(--color-border);border-radius:var(--radius-lg);padding:1.25rem;margin-top:1.25rem}
+.share-title{font-size:13px;font-weight:500;color:var(--color-text);margin-bottom:10px;display:flex;align-items:center;gap:6px}
+textarea{font-family:monospace;width:100%;font-size:12px;background:var(--color-bg);border:0.5px solid var(--color-border);border-radius:var(--radius-md);padding:10px 12px;color:var(--color-text-secondary);resize:vertical;line-height:1.8}
+textarea:focus{outline:none}
+.copy-ok{font-size:12px;color:var(--color-text-success);display:none;align-items:center;gap:4px}
+.copy-ok.show{display:flex}
+footer{text-align:center;font-size:12px;color:var(--color-text-tertiary);margin-top:3rem;padding-top:1.5rem;border-top:0.5px solid var(--color-border)}
+footer a{color:var(--color-text-info);text-decoration:none}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div class="header-icon"><i class="ti ti-diamond"></i></div>
+    <div>
+      <h1>楓之谷M — V核心最佳組合計算器</h1>
+      <p>選職業 → 建立技能池 → 輸入核心 → 最佳結果</p>
+    </div>
+  </div>
+
+  <div class="step-bar">
+    <div class="step active" id="s1" onclick="goStep(1)"><i class="ti ti-users"></i><br>1. 選職業</div>
+    <div class="step" id="s2" onclick="goStep(2)"><i class="ti ti-list"></i><br>2. 技能池</div>
+    <div class="step" id="s3" onclick="goStep(3)"><i class="ti ti-diamond"></i><br>3. 輸入核心</div>
+    <div class="step" id="s4" onclick="goStep(4)"><i class="ti ti-chart-bar"></i><br>4. 最佳結果</div>
+  </div>
+
+  <!-- 第一頁 -->
+  <div class="panel visible" id="panel1">
+    <div id="class-grid-container"></div>
+    <div class="add-class-row">
+      <i class="ti ti-plus" style="font-size:16px;color:var(--color-text-tertiary)"></i>
+      <input type="text" id="custom-class-input" placeholder="新增自定義職業名稱..." style="flex:1">
+      <button class="btn-secondary" onclick="addCustomClass()" style="white-space:nowrap;padding:8px 14px">新增職業</button>
+    </div>
+    <div class="action-row">
+      <button class="btn-primary" onclick="goStep(2)" id="to-step2-btn" disabled>下一步：建立技能池 →</button>
+    </div>
+  </div>
+
+  <!-- 第二頁 -->
+  <div class="panel" id="panel2">
+    <div id="p2-ref-box"></div>
+    <div class="section-title" style="margin-top:.5rem">你的強化技能池
+      <span style="font-size:12px;font-weight:400;color:var(--color-text-secondary)">— 條列所有想強化的技能</span>
+    </div>
+    <div class="skill-pool-wrap" id="skill-pool-display"></div>
+    <div class="manual-row">
+      <input type="text" id="manual-skill-input" placeholder="手動輸入技能名稱後按新增或 Enter..." onkeydown="if(event.key==='Enter')addManualSkill()">
+      <button class="btn-secondary" onclick="addManualSkill()" style="white-space:nowrap;padding:8px 14px"><i class="ti ti-plus"></i> 新增</button>
+    </div>
+    <div id="p2-qchips"></div>
+    <div class="action-row">
+      <button class="btn-secondary" onclick="goStep(1)">← 重選職業</button>
+      <button class="btn-primary" onclick="goStep(3)" id="to-step3-btn" disabled>下一步：輸入核心 →</button>
+    </div>
+  </div>
+
+  <!-- 第三頁 -->
+  <div class="panel" id="panel3">
+    <div class="info-bar"><i class="ti ti-info-circle"></i> 每顆核心3格技能需各不相同。首技能衝突限制由第四頁計算自動處理。</div>
+    <div id="core-cards-container"></div>
+    <button class="add-core-btn" onclick="addCoreCard()"><i class="ti ti-plus"></i> 新增核心</button>
+    <div class="action-row">
+      <button class="btn-secondary" onclick="goStep(2)">← 修改技能池</button>
+      <button class="btn-primary" onclick="goStep(4)">計算最佳組合 →</button>
+    </div>
+  </div>
+
+  <!-- 第四頁 -->
+  <div class="panel" id="panel4">
+    <div id="result-container"></div>
+    <div class="action-row">
+      <button class="btn-secondary" onclick="goStep(3)">← 修改核心</button>
+      <button class="btn-success" onclick="toggleShare()"><i class="ti ti-share"></i> 文字分享</button>
+    </div>
+    <div class="share-box" id="share-box" style="display:none">
+      <div class="share-title"><i class="ti ti-clipboard-text"></i> 分享文字</div>
+      <textarea id="share-textarea" rows="14" readonly></textarea>
+      <div class="action-row" style="margin-top:10px">
+        <button class="btn-primary" onclick="copyShare()"><i class="ti ti-copy"></i> 複製文字</button>
+        <span class="copy-ok" id="copy-ok"><i class="ti ti-circle-check"></i> 已複製！</span>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    楓之谷M V核心計算器 &nbsp;|&nbsp;
+    技能資料參考：<a href="https://forum.gamer.com.tw/C.php?bsn=7650&snA=994679" target="_blank">巴哈姆特 各職業V矩陣完美核心總整理</a>
+  </footer>
+</div>
+
+<script>
+const CLASS_DATA={
+  "冒險家 — 劍士":{
+    "英雄":{combo:"四核六技",skills:["狂暴攻擊","終極攻擊","憤怒爆發","劍士意念","烈焰翔斬"],perfect:["狂暴攻擊","終極攻擊","憤怒爆發"]},
+    "聖騎士":{combo:"四核六技",skills:["聖靈之劍","神聖審判","騎士衝擊波","鬼神之擊","神之滅擊","終極攻擊"],perfect:["聖靈之劍","神聖審判","騎士衝擊波"]},
+    "黑騎士":{combo:"四核六技",skills:["岡格尼爾之擊","暗炎斬連殺","追隨者","黑暗統合","究極突刺","終極攻擊"],perfect:["岡格尼爾之擊","暗炎斬連殺","追隨者"]},
+  },
+  "冒險家 — 法師":{
+    "冰雷魔導士":{combo:"四核六技",skills:["閃電連擊","雷霆萬鈞","冰鋒刃","閃電球","暴風雪","召喚冰魔"],perfect:["閃電連擊","雷霆萬鈞","冰鋒刃"]},
+    "火毒魔導士":{combo:"六核九技",skills:["瞬間移動精通","地獄爆發","火焰之襲","燎原之火","火流星","炙焰毒火","火靈結界","藍焰斬","召喚火魔"],perfect:["瞬間移動精通","地獄爆發","火焰之襲"]},
+    "主教":{combo:"四核六技",skills:["核爆術","天使之箭","天怒","群體治癒","聖龍精通","天堂之門"],perfect:["核爆術","天使之箭","天怒"]},
+    "烈焰巫師":{combo:"暫無資料",skills:[],perfect:[]},
+  },
+  "冒險家 — 弓箭手":{
+    "箭神":{combo:"四核六技",skills:["暴風神射","神速突擊","炸彈箭","穿透箭雨","爆炸箭","連射"],perfect:["暴風神射","神速突擊","炸彈箭"]},
+    "神射手":{combo:"四核六技",skills:["箭神之怒","冰雪暴風","神速突擊","穿透箭雨","凍結射擊","箭雨"],perfect:["箭神之怒","冰雪暴風","神速突擊"]},
+  },
+  "冒險家 — 盜賊":{
+    "暗夜行者":{combo:"三核四技",skills:["五連投擲","暗黑天魔","暗影蝙蝠","星塵"],perfect:["五連投擲","暗黑天魔","暗影蝙蝠"]},
+    "隱月":{combo:"暫無資料",skills:[],perfect:[]},
+    "神偷":{combo:"暫無資料",skills:[],perfect:[]},
+  },
+  "冒險家 — 海盜":{
+    "海盜":{combo:"四核六技",skills:["地獄之拳","超人拳法","泰坦爆碎","能量爆碎","爆震波","飛翔海盜"],perfect:["地獄之拳","超人拳法","泰坦爆碎"]},
+    "火砲兵":{combo:"四核六技",skills:["大砲射擊","艦砲射擊","召喚艦砲","砲彈攻擊","炸彈砲台","快速射擊"],perfect:["大砲射擊","艦砲射擊","召喚艦砲"]},
+  },
+  "皇家騎士團":{
+    "黑翼":{combo:"四核六技",skills:["夜鷹羽翼","黑暗連擊","極速斬擊","黑翼爆炸","黑暗分裂","連斬"],perfect:["夜鷹羽翼","黑暗連擊","極速斬擊"]},
+    "幻影":{combo:"四核六技",skills:["幸運惡魔","幻影4連擊","賭徒幸運","翻牌攻擊","王牌翻牌","暗黑鞭打"],perfect:["幸運惡魔","幻影4連擊","賭徒幸運"]},
+    "伊里亞斯":{combo:"四核六技",skills:["大地之力","冰原颶風","光明判決","大地齊射","光明之刃","冰晶術"],perfect:["大地之力","冰原颶風","光明判決"]},
+    "劍豪":{combo:"四核六技",skills:["狂刃斬","烈風斬","真空劍氣","絕殺斬","疾風劍氣","剛氣衝天"],perfect:["狂刃斬","烈風斬","真空劍氣"]},
+    "魂靈巫師":{combo:"四核六技",skills:["靈魂衝擊","靈魂燃燒","虛空爆裂","靈魂波動","魂靈爆炎","虛空斬"],perfect:["靈魂衝擊","靈魂燃燒","虛空爆裂"]},
+    "龍魔導士":{combo:"四核六技",skills:["龍怒","龍翼斬","龍爪攻擊","龍之怒吼","龍之捷","聖歐尼斯龍"],perfect:["龍怒","龍翼斬","龍爪攻擊"]},
+    "夜光":{combo:"暫無資料",skills:[],perfect:[]},
+  },
+  "英雄團":{
+    "阿戴爾":{combo:"四核六技",skills:["靈魂十字","激情鍛煉","無敵劍神","靈魂打磨","幽冥劍閃","烈焰破碎"],perfect:["靈魂十字","激情鍛煉","無敵劍神"]},
+    "伊洛蒂":{combo:"四核六技",skills:["靈魂共鳴","靈魂衝擊","絕命連擊","魂影爆碎","靈魂奔流","連靈攻擊"],perfect:["靈魂共鳴","靈魂衝擊","絕命連擊"]},
+    "霍英":{combo:"四核六技",skills:["劍舞連擊","霜刃斬","絕殺劍吼","劍氣波動","寒冰劍術","劍神爆裂"],perfect:["劍舞連擊","霜刃斬","絕殺劍吼"]},
+    "卡莉":{combo:"四核六技",skills:["魂魄爆裂","暗翼颶風","暗影爪痕","魂魄波動","暗翼斬擊","命運之刃"],perfect:["魂魄爆裂","暗翼颶風","暗影爪痕"]},
+    "道奇":{combo:"四核六技",skills:["神速連擊","超速斬","爆炎突刺","衝擊波","火焰突刺","爆裂連斬"],perfect:["神速連擊","超速斬","爆炎突刺"]},
+  },
+  "末日反抗軍":{
+    "凱內西斯":{combo:"四核六技",skills:["心碎","突破","BPM","凱內西斯爆破","節拍連打","激爆節拍"],perfect:["心碎","突破","BPM"]},
+    "卡德拉":{combo:"四核六技",skills:["卡德拉爆炸","神聖衝擊","天罰雷霆","聖光爆擊","神聖連擊","天使打擊"],perfect:["卡德拉爆炸","神聖衝擊","天罰雷霆"]},
+    "安潔莉克":{combo:"四核六技",skills:["魔法大砲","魔法雷霆","魔法爆炎","魔法突擊","魔法爆破","光明雷霆"],perfect:["魔法大砲","魔法雷霆","魔法爆炎"]},
+    "虎影":{combo:"四核六技",skills:["虎爪攻擊","猛虎衝擊","虎影爆裂","虎影斬","虎爪突刺","影虎連擊"],perfect:["虎爪攻擊","猛虎衝擊","虎影爆裂"]},
+    "琳恩":{combo:"暫無資料",skills:[],perfect:[]},
+    "天使破壞者":{combo:"暫無資料",skills:[],perfect:[]},
+    "葉里":{combo:"暫無資料",skills:[],perfect:[]},
+  },
+  "曉之陣/超新星":{
+    "賽拉":{combo:"四核六技",skills:["絕命射擊","箭雨攻擊","貫穿箭","超速箭","霜凍箭","穿刺箭"],perfect:["絕命射擊","箭雨攻擊","貫穿箭"]},
+    "蕾薇亞":{combo:"四核六技",skills:["電磁爆炸","電磁連擊","電磁爆破","電波擴散","電磁波","電磁衝擊"],perfect:["電磁爆炸","電磁連擊","電磁爆破"]},
+    "菈菈":{combo:"四核六技",skills:["龍魂爆炸","龍翼颶風","龍火爆裂","龍翼斬","龍爪連擊","龍之憤怒"],perfect:["龍魂爆炸","龍翼颶風","龍火爆裂"]},
+    "蓮":{combo:"四核六技",skills:["蓮花爆炸","蓮魂衝擊","蓮花連擊","蓮花波動","花瓣斬","蓮影踢"],perfect:["蓮花爆炸","蓮魂衝擊","蓮花連擊"]},
+    "花開月影":{combo:"四核六技",skills:["月影斬","花開之力","月影爆炸","月影波動","花影連擊","月之刃"],perfect:["月影斬","花開之力","月影爆炸"]},
+    "施亞":{combo:"暫無資料",skills:[],perfect:[]},
+    "艾依爾":{combo:"暫無資料",skills:[],perfect:[]},
+    "狂郎勇士":{combo:"暫無資料",skills:[],perfect:[]},
+    "卡蒂娜":{combo:"暫無資料",skills:[],perfect:[]},
+    "凱因":{combo:"暫無資料",skills:[],perfect:[]},
+  }
+};
+
+let selectedClass=null,customClasses=[],skillPool=[],coreCount=0,lastResult=null;
+
+function gcd(n){for(const g of Object.values(CLASS_DATA))if(g[n])return g[n];return null;}
+function isPending(n){const d=gcd(n);return !d||d.combo==="暫無資料";}
+
+function buildClassGrid(){
+  const c=document.getElementById('class-grid-container');
+  let h='';
+  for(const [grp,cls] of Object.entries(CLASS_DATA)){
+    h+=`<div class="class-grid"><div class="grp-label">${grp}</div>`;
+    for(const name of Object.keys(cls)){
+      const p=isPending(name);
+      h+=`<div class="class-btn" id="cb-${CSS.escape(name)}" onclick="selectClass('${name.replace(/'/g,"\\'")}')">
+        ${name}${p?'<br><span style="font-size:10px;opacity:.4">待更新</span>':''}
+      </div>`;
+    }
+    h+=`</div>`;
+  }
+  if(customClasses.length>0){
+    h+=`<div class="class-grid"><div class="grp-label">自定義職業</div>`;
+    for(const c of customClasses)
+      h+=`<div class="class-btn" id="cb-${CSS.escape(c.name)}" onclick="selectClass('${c.name.replace(/'/g,"\\'")}')">
+        ${c.name}<br><span style="font-size:10px;opacity:.4">自定義</span></div>`;
+    h+=`</div>`;
+  }
+  c.innerHTML=h;
+}
+
+function addCustomClass(){
+  const inp=document.getElementById('custom-class-input');
+  const name=inp.value.trim();
+  if(!name)return;
+  for(const g of Object.values(CLASS_DATA))if(g[name])return;
+  if(customClasses.find(c=>c.name===name))return;
+  customClasses.push({name});inp.value='';buildClassGrid();
+}
+
+function selectClass(name){
+  selectedClass=name;
+  document.querySelectorAll('.class-btn').forEach(b=>b.classList.remove('selected'));
+  const btn=document.getElementById(`cb-${CSS.escape(name)}`);
+  if(btn)btn.classList.add('selected');
+  document.getElementById('to-step2-btn').disabled=false;
+}
+
+function goStep(n){
+  if(n>=2&&!selectedClass)return;
+  if(n>=3&&skillPool.length===0)return;
+  document.getElementById('share-box').style.display='none';
+  document.querySelectorAll('.step').forEach((s,i)=>{
+    s.classList.remove('active','done');
+    if(i+1<n)s.classList.add('done');
+    else if(i+1===n)s.classList.add('active');
+  });
+  document.querySelectorAll('.panel').forEach((p,i)=>p.classList.toggle('visible',i+1===n));
+  if(n===2)buildStep2();
+  if(n===3)buildStep3();
+  if(n===4)buildResult();
+}
+
+function buildStep2(){
+  const d=gcd(selectedClass);
+  const pending=isPending(selectedClass);
+  const rb=document.getElementById('p2-ref-box');
+  if(pending){
+    rb.innerHTML=`<div class="ref-box pending">
+      <div class="ref-box-title" style="color:var(--color-text-warning)"><i class="ti ti-clock"></i> ${selectedClass} — 暫無資料待更新</div>
+      <div style="font-size:12px;color:var(--color-text-warning)">請手動輸入技能名稱建立技能池</div>
+    </div>`;
+  } else {
+    rb.innerHTML=`<div class="ref-box">
+      <div class="ref-box-title"><i class="ti ti-info-circle"></i> ${selectedClass} 建議技能（點擊快速加入）</div>
+      <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:4px"><span style="color:var(--color-text-info)">藍底 = 完美核心</span>，灰底 = 補強技能</div>
+      <div class="quick-chips">${d.skills.map(s=>`<span class="qchip ${d.perfect.includes(s)?'perfect':''} ${skillPool.includes(s)?'added':''}" data-skill="${s}" onclick="addToPool('${s.replace(/'/g,"\\'")}',this)">${s}</span>`).join('')}</div>
+      <a style="font-size:12px;color:var(--color-text-info);display:inline-flex;align-items:center;gap:3px;margin-top:10px" href="https://forum.gamer.com.tw/C.php?bsn=7650&snA=994679" target="_blank"><i class="ti ti-external-link" style="font-size:13px"></i> 參考來源：巴哈姆特</a>
+    </div>`;
+  }
+  renderPool();
+}
+
+function addToPool(skill,el){
+  if(skillPool.includes(skill))return;
+  skillPool.push(skill);
+  if(el)el.classList.add('added');
+  renderPool();
+  document.getElementById('to-step3-btn').disabled=false;
+}
+
+function addManualSkill(){
+  const inp=document.getElementById('manual-skill-input');
+  const val=inp.value.trim();
+  if(!val||skillPool.includes(val))return;
+  skillPool.push(val);inp.value='';
+  renderPool();
+  document.getElementById('to-step3-btn').disabled=false;
+  document.querySelectorAll('.qchip').forEach(c=>{if(c.dataset.skill===val)c.classList.add('added');});
+}
+
+function removeFromPool(skill){
+  skillPool=skillPool.filter(s=>s!==skill);
+  renderPool();
+  document.getElementById('to-step3-btn').disabled=skillPool.length===0;
+  document.querySelectorAll('.qchip').forEach(c=>{if(c.dataset.skill===skill)c.classList.remove('added');});
+  rebuildAllSelects();
+}
+
+function renderPool(){
+  const d=gcd(selectedClass);
+  const pf=d?d.perfect:[];
+  const wrap=document.getElementById('skill-pool-display');
+  if(skillPool.length===0){
+    wrap.innerHTML=`<span style="font-size:13px;color:var(--color-text-tertiary)">尚未加入任何技能</span>`;
+    return;
+  }
+  wrap.innerHTML=skillPool.map(s=>`
+    <div class="skill-pool-tag ${pf.includes(s)?'perfect':''}">
+      ${pf.includes(s)?'<i class="ti ti-star" style="font-size:12px"></i>':''}
+      ${s}
+      <button class="rm" onclick="removeFromPool('${s.replace(/'/g,"\\'")}')"><i class="ti ti-x"></i></button>
+    </div>`).join('');
+}
+
+function buildStep3(){
+  const c=document.getElementById('core-cards-container');
+  if(c.children.length===0){coreCount=0;addCoreCard();addCoreCard();addCoreCard();}
+  else rebuildAllSelects();
+}
+
+function getVals(id){return[1,2,3].map(s=>(document.getElementById(`c${id}_s${s}`)?.value||'').trim());}
+
+function buildOpts(id,si){
+  const vals=getVals(id);
+  const blocked=new Set(vals.filter((_,i)=>i!==si-1).filter(Boolean));
+  let o=`<option value="">— 選擇技能 —</option>`;
+  for(const s of skillPool){
+    const b=blocked.has(s);
+    o+=`<option value="${s}" ${vals[si-1]===s?'selected':''} ${b?'disabled':''}>${s}${b?' (已使用)':''}</option>`;
+  }
+  return o;
+}
+
+function onSlotChange(id,si){
+  for(let s=1;s<=3;s++){
+    if(s===si)continue;
+    const el=document.getElementById(`c${id}_s${s}`);
+    if(el)el.innerHTML=buildOpts(id,s);
+  }
+}
+
+function rebuildAllSelects(){
+  document.querySelectorAll('.core-card').forEach(card=>{
+    const id=card.id.replace('core-card-','');
+    for(let s=1;s<=3;s++){
+      const el=document.getElementById(`c${id}_s${s}`);
+      if(el)el.innerHTML=buildOpts(parseInt(id),s);
+    }
+  });
+}
+
+function addCoreCard(){
+  coreCount++;
+  const id=coreCount;
+  const div=document.createElement('div');
+  div.className='core-card';div.id=`core-card-${id}`;
+  const labels=[{l:'首技能',f:true},{l:'第二格',f:false},{l:'第三格',f:false}];
+  let sh='';
+  for(let s=1;s<=3;s++){
+    const {l,f}=labels[s-1];
+    sh+=`<div>
+      <div class="slot-label ${f?'first':''}"><i class="ti ti-${f?'pin':'circle-dashed'}" style="font-size:11px"></i> ${l}</div>
+      <select id="c${id}_s${s}" onchange="onSlotChange(${id},${s})">${buildOpts(id,s)}</select>
+    </div>`;
+  }
+  div.innerHTML=`
+    <div class="core-card-hdr">
+      <span style="font-size:12px;font-weight:500;color:var(--color-text-secondary);display:flex;align-items:center;gap:5px">
+        <i class="ti ti-diamond" style="font-size:13px"></i> 核心 #${id}
+      </span>
+      <button class="btn-danger" onclick="removeCoreCard(${id})"><i class="ti ti-trash"></i></button>
+    </div>
+    <div class="core-slots">${sh}</div>`;
+  document.getElementById('core-cards-container').appendChild(div);
+}
+
+function removeCoreCard(id){const el=document.getElementById(`core-card-${id}`);if(el)el.remove();}
+
+function readCores(){
+  const cores=[];
+  document.querySelectorAll('.core-card').forEach(card=>{
+    const id=card.id.replace('core-card-','');
+    const s1=(document.getElementById(`c${id}_s1`)?.value||'').trim();
+    const s2=(document.getElementById(`c${id}_s2`)?.value||'').trim();
+    const s3=(document.getElementById(`c${id}_s3`)?.value||'').trim();
+    if(s1)cores.push({id:parseInt(id),skills:[s1,s2,s3].filter(Boolean),first:s1});
+  });
+  return cores;
+}
+
+function computeBest(cores){
+  const n=Math.min(cores.length,20);
+  let best=[],bestSc=-1;
+  function sc(sel){
+    const cnt={};
+    for(const c of sel)for(const s of c.skills)cnt[s]=(cnt[s]||0)+1;
+    let t=0;for(const v of Object.values(cnt))t+=Math.min(v,3)*20;return t;
+  }
+  function valid(sel){const f=sel.map(c=>c.first);return new Set(f).size===f.length;}
+  for(let mask=1;mask<(1<<n);mask++){
+    const sel=[];
+    for(let i=0;i<n;i++)if(mask&(1<<i))sel.push(cores[i]);
+    if(!valid(sel))continue;
+    const s=sc(sel);if(s>bestSc){bestSc=s;best=sel;}
+  }
+  const ids=new Set(best.map(c=>c.id));
+  const excl=cores.filter(c=>!ids.has(c.id));
+  const skillCount={};
+  for(const c of best)for(const s of c.skills)skillCount[s]=Math.min((skillCount[s]||0)+1,3);
+  return{used:best,excluded:excl,skillCount};
+}
+
+function buildResult(){
+  const cores=readCores();
+  if(cores.length===0){
+    document.getElementById('result-container').innerHTML=`<div class="notice"><i class="ti ti-alert-circle"></i> 請先在第三步輸入至少一顆核心。</div>`;
+    return;
+  }
+  const result=computeBest(cores);lastResult=result;
+  const {used,excluded,skillCount}=result;
+  const uq=Object.keys(skillCount).length;
+  const mx=Object.values(skillCount).filter(v=>v>=3).length;
+  let h=`<div class="stat-grid">
+    <div class="stat-card"><div class="num">${used.length}</div><div class="lbl">使用核心數</div></div>
+    <div class="stat-card"><div class="num">${uq}</div><div class="lbl">技能種類數</div></div>
+    <div class="stat-card"><div class="num">${mx}</div><div class="lbl">達60等技能</div></div>
+  </div>`;
+  h+=`<div class="result-sec"><div class="result-title" style="color:var(--color-text-success)"><i class="ti ti-circle-check"></i> 使用核心（${used.length} 顆）</div>`;
+  for(const c of used){
+    h+=`<div class="used-card">
+      <div style="font-size:12px;font-weight:500;color:var(--color-text-secondary);margin-bottom:6px"><i class="ti ti-diamond" style="font-size:12px"></i> 核心 #${c.id}</div>
+      <div>${c.skills.map((s,i)=>`<span class="skill-tag ${i===0?'first':'other'}">${i===0?'首 ':''}${s}</span>`).join('')}</div>
+    </div>`;
+  }
+  h+=`</div><div class="result-sec"><div class="result-title"><i class="ti ti-chart-bar"></i> 技能等級總覽</div><div class="level-row">`;
+  for(const [sk,cnt] of Object.entries(skillCount)){
+    const lv=cnt*20,mx=cnt>=3;
+    h+=`<div class="level-item">
+      <span style="font-size:12px;color:var(--color-text)">${sk}</span>
+      <div class="lbar-wrap"><div class="lbar${mx?' max':''}" style="width:${Math.round(lv/60*100)}%"></div></div>
+      <span class="lnum${mx?' max':''}">${lv}等</span>
+    </div>`;
+  }
+  h+=`</div></div>`;
+  if(excluded.length>0){
+    h+=`<div class="result-sec"><div class="result-title" style="color:var(--color-text-secondary)"><i class="ti ti-ban"></i> 排除核心（${excluded.length} 顆）</div>
+      <div class="notice" style="margin-bottom:8px">以下核心因首技能衝突或無額外收益而被排除。</div>`;
+    for(const c of excluded){
+      h+=`<div class="excl-card">
+        <div style="font-size:12px;color:var(--color-text-tertiary);margin-bottom:4px"><i class="ti ti-diamond" style="font-size:12px"></i> 核心 #${c.id}</div>
+        <div>${c.skills.map((s,i)=>`<span class="skill-tag ${i===0?'first':'other'}">${i===0?'首 ':''}${s}</span>`).join('')}</div>
+      </div>`;
+    }
+    h+=`</div>`;
+  }
+  document.getElementById('result-container').innerHTML=h;
+}
+
+function genShare(){
+  if(!lastResult)return'';
+  const{used,skillCount}=lastResult;
+  const lines=[`【楓之谷M V核心最佳組合】`,`職業：${selectedClass}`,``];
+  lines.push(`建議使用核心：`);
+  used.forEach((c,i)=>{
+    lines.push(`  核心${i+1}：${c.skills.map((s,si)=>si===0?`[首]${s}`:s).join(' / ')}`);
+  });
+  lines.push(``);
+  lines.push(`技能等級總覽：`);
+  for(const [sk,cnt] of Object.entries(skillCount)){
+    lines.push(`  ${cnt>=3?'★ ':'  '}${sk}：${cnt*20}等${cnt>=3?' (已滿)':''}`);
+  }
+  lines.push(``);
+  lines.push(`─── 由楓之谷M V核心計算器產出 ───`);
+  return lines.join('\n');
+}
+
+function toggleShare(){
+  const box=document.getElementById('share-box');
+  const hidden=box.style.display==='none';
+  if(hidden){document.getElementById('share-textarea').value=genShare();box.style.display='block';document.getElementById('copy-ok').classList.remove('show');}
+  else box.style.display='none';
+}
+
+function copyShare(){
+  const ta=document.getElementById('share-textarea');
+  try{navigator.clipboard.writeText(ta.value).then(()=>{const fb=document.getElementById('copy-ok');fb.classList.add('show');setTimeout(()=>fb.classList.remove('show'),2500);});}
+  catch(e){ta.select();document.execCommand('copy');const fb=document.getElementById('copy-ok');fb.classList.add('show');setTimeout(()=>fb.classList.remove('show'),2500);}
+}
+
+buildClassGrid();
+</script>
+</body>
+</html>
